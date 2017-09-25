@@ -151,14 +151,19 @@ bool DiagramShape::equals(const DiagramShape &other) const
 {
 	for (string primId : ids)
 	{
+		if (find(other.ids.begin(), other.ids.end(), primId) == other.ids.end())
+			return false;
+	}
+	return true;
+}
+bool DiagramShape::shareSide(const DiagramShape &other) const
+{
+	for (string primId : ids)
+	{
 		if (find(other.ids.begin(), other.ids.end(), primId) != other.ids.end())
 			return true;
 	}
 	return false;
-}
-bool DiagramShape::shareSide(const DiagramShape &other) const
-{
-
 }
 bool DiagramShape::overlapping() const
 {

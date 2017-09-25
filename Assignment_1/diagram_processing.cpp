@@ -181,14 +181,19 @@ int shapeInside(const DiagramShape& shape1, const DiagramShape& shape2) {
 
 bool validShapeVector(const vector<DiagramShape> &shapes)
 {
-	set<string> ids;
+	vector<string> ids;
 	for (DiagramShape shape : shapes)
 		for (string id : shape.ids)
-			ids.insert(id);
+		{
+			if (find(ids.begin(), ids.end(), id) != ids.end())
+				return false;
+			ids.push_back(id);
+		}
+			
 
 	for (string id : allIds)
 	{
-		if (ids.find(id) == ids.end())
+		if (find(ids.begin(), ids.end(), id) == ids.end())
 			return false;
 	}
 
@@ -208,18 +213,19 @@ void recursiveFindValidCombinations(vector<vector<DiagramShape>> &results, vecto
 	}
 	for (vector<DiagramShape>::iterator it = validShapes.begin(); it != validShapes.end();)
 	{
-		for (vector<DiagramShape>::iterator jt = validShapes.begin(); jt != validShapes.end();)
+		DiagramShape currentShape = *it;
+		completedShapes.push_back(currentShape);
+		it = validShapes.erase(it);
+		vector<DiagramShape> nextShapes = validShapes;
+		for (vector<DiagramShape>::iterator jt = nextShapes.begin(); jt != nextShapes.end();)
 		{
-			if ((*it).equals(*jt) && it != jt)
-				jt = validShapes.erase(jt);
+			if ((currentShape).shareSide(*jt))
+				jt = nextShapes.erase(jt);
 			else
 				jt++;
 		}
-		if (it == validShapes.end())
-			continue;
-		completedShapes.push_back(*it);
-		it = validShapes.erase(it);
-		recursiveFindValidCombinations(results, validShapes, completedShapes);
+		recursiveFindValidCombinations(results, nextShapes, completedShapes);
+		completedShapes.pop_back();
 	}
 }
 
