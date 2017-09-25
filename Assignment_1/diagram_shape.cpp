@@ -194,7 +194,7 @@ void DiagramShape::purgeExtraPoints()
 	}
 	cv::Point point21 = (points[points.size() - 1] - points[points.size() - 2]);
 	point21 = point21 / (sqrt(point21.ddot(point21)));
-	cv::Point point10 = (points[0] - points[1]);
+	cv::Point point10 = (points[1] - points[0]);
 	point10 = point10 / (sqrt(point10.ddot(point10)));
 	if (point21 == point10)
 	{
@@ -203,6 +203,16 @@ void DiagramShape::purgeExtraPoints()
 		points.push_back(points[0]);
 	}
 	
+	
+}
+void DiagramShape::calcCenter()
+{
+	if (type == CIRCLE || type == DOT)
+		return;
+	cv::Point sum;
+	for (int i = 0; i < points.size() - 1; i++)
+		sum += points[i];
+	center = sum / int(points.size() - 1);
 }
 
 //You do not need to edit this function

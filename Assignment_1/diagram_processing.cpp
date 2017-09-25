@@ -61,20 +61,7 @@ void findShapes(vector<DiagramShape> &primitives, vector<vector<DiagramShape> > 
 				jt++;
 		}
 			
-	for (DiagramShape &shape : shapes)
-	{
-		shape.purgeExtraPoints();
-		if (shape.convertToTriangle())
-			continue;
-		else if (shape.convertToSquare())
-			continue;
-		else if (shape.convertToRectangle())
-			continue;
-		else if (shape.convertToScc())
-			continue;
-		else
-			cout << "Could not convert to any shape" << endl;
-	}
+	
 	for (DiagramShape shape : circles)
 	{
 		shapes.push_back(shape);
@@ -89,12 +76,10 @@ void findShapes(vector<DiagramShape> &primitives, vector<vector<DiagramShape> > 
 	
 	
 	recursiveFindValidCombinations(results, shapes, vector<DiagramShape>());
-
+	updateShapeInfo(results);
+	
 }
 
-void findRelations(vector<vector<DiagramShape> > &diagrams){
-  // *** IMPLEMENT ***
-}
 
 // This is used only for the shape overlap/inside functions.
 void drawFilledShape(const DiagramShape& shape, cv::Mat& image, cv::Scalar color) {
@@ -125,7 +110,7 @@ void drawFilledShape(const DiagramShape& shape, cv::Mat& image, cv::Scalar color
     }
 }
 
-bool shapeOverlap(const DiagramShape& shape1, const DiagramShape& shape2) {
+bool shapeOverlap(DiagramShape& shape1, DiagramShape& shape2) {
     // Test overlap by doing per-pixel comparison of the two shapes.
     cv::Mat image1 = cv::Mat::zeros(cv::Size(1000, 1000), CV_8UC1);
     cv::Mat image2 = cv::Mat::zeros(cv::Size(1000, 1000), CV_8UC1);
@@ -137,8 +122,29 @@ bool shapeOverlap(const DiagramShape& shape1, const DiagramShape& shape2) {
     cv::bitwise_and(image1, image2, overlap);
     //cv::imshow("overlap test", overlap);
     
+	// Check if shape 1 is entirely within the overlap. If so, then the overlap between shape 1 and the overlap should be the entirety of shape 1.
+	cv::Mat shape1_overlap;
+	cv::bitwise_and(image1, overlap, shape1_overlap);
+	bool eq1 = cv::countNonZero(shape1_overlap != image1) == 0;
+
+	// Check if shape 2 is entirely within the overlap.
+	cv::Mat shape2_overlap;
+	cv::bitwise_and(image2, overlap, shape2_overlap);
+	bool eq2 = cv::countNonZero(shape2_overlap != image2) == 0;
+
+
+	if (eq1) {
+		shape1.relations.push_back(Relation(shape2.id, INSIDE));
+		return true;
+	}
+	else if (eq2) {
+		shape2.relations.push_back(Relation(shape1.id, INSIDE));
+		return false;
+	}
+	
     //cv::waitKey();
     if (cv::countNonZero(overlap) > 0) {
+		shape1.relations.push_back(Relation(shape2.id, OVERLAP));
         return true;
     }
     else {
@@ -146,7 +152,7 @@ bool shapeOverlap(const DiagramShape& shape1, const DiagramShape& shape2) {
     }
 }
 
-int shapeInside(const DiagramShape& shape1, const DiagramShape& shape2) {
+int shapeInside(DiagramShape& shape1, DiagramShape& shape2) {
     // Compare the overlapping area and each shape. If a shape is entirely within the overlap, then that shape is within the other shape.
     cv::Mat image1 = cv::Mat::zeros(cv::Size(1000, 1000), CV_8UC1);
     cv::Mat image2 = cv::Mat::zeros(cv::Size(1000, 1000), CV_8UC1);
@@ -169,15 +175,82 @@ int shapeInside(const DiagramShape& shape1, const DiagramShape& shape2) {
 
     
     if (eq1) {
+		shape1.relations.push_back(Relation(shape2.id, INSIDE));
         return 1;
     }
     else if (eq2) {
+		shape2.relations.push_back(Relation(shape1.id, INSIDE));
         return 2;
     }
     else {
         return 0;
     }
 }
+
+bool shapeLeftOf(DiagramShape& shape1, DiagramShape& shape2)
+{
+	shape1.calcCenter();
+	shape2.calcCenter();
+	if (shape1.center.x < shape2.center.x)
+	{
+		shape1.relations.push_back(Relation(shape2.id, LEFT_OF));
+		return true;
+	}
+		
+	else if (shape2.center.x < shape1.center.x)
+	{
+		shape2.relations.push_back(Relation(shape1.id, LEFT_OF));
+		return false;
+	}
+
+}
+
+bool shapeAbove(DiagramShape& shape1, DiagramShape& shape2)
+{
+	shape1.calcCenter();
+	shape2.calcCenter();
+	if (shape1.center.y < shape2.center.y)
+	{
+		shape1.relations.push_back(Relation(shape2.id, ABOVE));
+		return true;
+	}
+		
+	else if (shape2.center.y < shape1.center.y)
+	{
+		shape2.relations.push_back(Relation(shape1.id, ABOVE));
+		return false;
+	}
+		
+}
+
+void updateShapeInfo(vector<vector<DiagramShape>> &results)
+{
+	for (vector<DiagramShape> &vec : results)
+	{
+		for (int i = 0; i < vec.size(); i++)
+		{
+			vec[i].purgeExtraPoints();
+			if (vec[i].convertToTriangle())
+				continue;
+			else if (vec[i].convertToSquare())
+				continue;
+			else if (vec[i].convertToRectangle())
+				continue;
+			else if (vec[i].convertToScc())
+				continue;
+			else
+				cout << "Could not convert to any shape" << endl;
+			for (int j = i + 1; j < vec.size(); j++)
+			{
+				
+				shapeOverlap(vec[i], vec[j]);
+				shapeLeftOf(vec[i], vec[j]);
+				shapeAbove(vec[i], vec[j]);
+			}
+		}
+	}
+}
+
 
 bool validShapeVector(const vector<DiagramShape> &shapes)
 {
@@ -196,7 +269,7 @@ bool validShapeVector(const vector<DiagramShape> &shapes)
 		if (find(ids.begin(), ids.end(), id) == ids.end())
 			return false;
 	}
-
+	return true;
 }
 
 void recursiveFindValidCombinations(vector<vector<DiagramShape>> &results, vector<DiagramShape> validShapes, vector<DiagramShape> completedShapes)

@@ -20,6 +20,11 @@ enum RelationType {LEFT_OF, RIGHT_OF, ABOVE, BELOW, INSIDE, OVERLAP, TOUCH};
 struct Relation {
 public:
 	//stores the id of the related shape
+	Relation(string id, RelationType type)
+	{
+		otherShape_id = id;
+		relation_type = type;
+	}
     string otherShape_id;
     RelationType relation_type;
 };
@@ -60,6 +65,7 @@ public:
 	bool shareSide(const DiagramShape &other)const;
 	bool overlapping()const;
 	void purgeExtraPoints();
+	void DiagramShape::calcCenter();
 
 
     bool combine(const DiagramShape &shape, DiagramShape &result_combination) const;

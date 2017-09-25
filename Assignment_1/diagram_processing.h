@@ -13,15 +13,18 @@ void findShapes(vector<DiagramShape> &primitives, vector<vector<DiagramShape> > 
 
 void recursiveFindValidCombinations(vector<vector<DiagramShape>> &results, vector<DiagramShape> validShapes, vector<DiagramShape> completedShapes);
 
-//add relationships to shapes in each diagram
-// ***IMPLEMENT***
-void findRelations(vector<vector<DiagramShape> > &diagrams);
 
 // Determines whether two shapes overlap. Returns true if shapes overlap, false otherwise.
-bool shapeOverlap(const DiagramShape& shape1, const DiagramShape& shape2);
+bool shapeOverlap(DiagramShape& shape1, DiagramShape& shape2);
 
 // Determines whether a shape is within another shape.
 // Returns 0 if neither are within the other, 1 if shape1 is within shape2, 2 if shape2 is within shape1.
-int shapeInside(const DiagramShape& shape1, const DiagramShape& shape2);
+int shapeInside(DiagramShape& shape1, DiagramShape& shape2);
+
+bool shapeLeftOf(DiagramShape& shape1, DiagramShape& shape2);
+
+bool shapeAbove(DiagramShape& shape1, DiagramShape& shape2);
+
+void updateShapeInfo(vector<vector<DiagramShape>> &results);
 
 #endif /* diagram_processing_h */
