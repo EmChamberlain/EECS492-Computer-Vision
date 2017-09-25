@@ -25,7 +25,7 @@ int main(int argc, const char *argv[]) {
 	vector<vector<DiagramShape>> results;
 	findShapes(primitives, results);
 
-	printOutput(results, outputBaseName);
+	printOutput(results, outputLoc + "/" + outputBaseName);
 
 	
 

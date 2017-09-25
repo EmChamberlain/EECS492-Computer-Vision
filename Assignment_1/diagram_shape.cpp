@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include "diagram_shape.h"
 
 //used to compare doubles
@@ -17,6 +18,19 @@ double dotProduct(cv::Point pt1, cv::Point pt2, cv::Point pt3)
 {
 	return (pt2 - pt1).ddot((pt3 - pt1));
 }
+
+struct customStringSort
+{
+	bool operator()(const string &string1, const string &string2)
+	{
+		if (string1.length() < string2.length())
+			return true;
+		else if (string1.length() > string2.length())
+			return false;
+		else
+			return string1 < string2;
+	}
+};
 
 //checks if it is possible to to combine this and shape, if it is return true and edit result_combination
 //Can be used when finding shapes in diagram_processing.cpp
@@ -73,7 +87,7 @@ bool DiagramShape::convertToSquare() {
 	if (points.size() != 5)
 		return false;
 	double sideLength = euclideanDistance(points[0], points[1]);
-	for (int i = 0; i < points.size() - 1; i++)
+	for (unsigned int i = 0; i < points.size() - 1; i++)
 	{
 		if (euclideanDistance(points[i], points[i + 1]) != sideLength)
 		{
@@ -87,7 +101,7 @@ bool DiagramShape::convertToSquare() {
 	stringstream ss;
 	ss << "sq" << sqInd++;
 	id = ss.str();
-	sort(ids.begin(), ids.end());
+	sort(ids.begin(), ids.end(), customStringSort());
 	return true;
 }
 
@@ -112,7 +126,7 @@ bool DiagramShape::convertToRectangle() {
 	stringstream ss;
 	ss << "r" << rInd++;
 	id = ss.str();
-	sort(ids.begin(), ids.end());
+	sort(ids.begin(), ids.end(), customStringSort());
 	return true;
 }
 
@@ -128,18 +142,21 @@ bool DiagramShape::convertToTriangle() {
 	stringstream ss;
 	ss << "t" << tInd++;
 	id = ss.str();
-	sort(ids.begin(), ids.end());
+	sort(ids.begin(), ids.end(), customStringSort());
     return true;
 }
 
 bool DiagramShape::convertToScc()
 {
+	if (points.size() < 4)
+		return false;
+
 	type = SCC;
 	static int sccInd = 1;
 	stringstream ss;
 	ss << "scc" << sccInd++;
 	id = ss.str();
-	sort(ids.begin(), ids.end());
+	sort(ids.begin(), ids.end(), customStringSort());
 	return true;
 }
 
@@ -167,9 +184,9 @@ bool DiagramShape::shareSide(const DiagramShape &other) const
 }
 bool DiagramShape::overlapping() const
 {
-	for (int i = 0; i < points.size(); i++)
+	for (unsigned int i = 0; i < points.size(); i++)
 	{
-		for (int j = i + 1; j < points.size(); j++)
+		for (unsigned int j = i + 1; j < points.size(); j++)
 		{
 			if (points[i] == points[j])
 				return true;
@@ -179,13 +196,13 @@ bool DiagramShape::overlapping() const
 }
 void DiagramShape::purgeExtraPoints()
 {
-	for (int i = 0; i < points.size() - 2;)
+	if (points.empty())
+		return;
+	for (unsigned int i = 0; i < points.size() - 2;)
 	{
 		cv::Point point21 = (points[i + 2] - points[i + 1]);
-		point21 = point21 / (sqrt(point21.ddot(point21)));
 		cv::Point point10 = (points[i + 1] - points[i + 0]);
-		point10 = point10 / (sqrt(point10.ddot(point10)));
-		if (point21 == point10)
+		if (point21.cross(point10) == 0)
 		{
 			points.erase(points.begin() + i + 1);
 		}
@@ -193,10 +210,8 @@ void DiagramShape::purgeExtraPoints()
 			i++;
 	}
 	cv::Point point21 = (points[points.size() - 1] - points[points.size() - 2]);
-	point21 = point21 / (sqrt(point21.ddot(point21)));
 	cv::Point point10 = (points[1] - points[0]);
-	point10 = point10 / (sqrt(point10.ddot(point10)));
-	if (point21 == point10)
+	if (point21.cross(point10) == 0)
 	{
 		points.erase(points.begin());
 		points.pop_back();
@@ -210,7 +225,7 @@ void DiagramShape::calcCenter()
 	if (type == CIRCLE || type == DOT)
 		return;
 	cv::Point sum;
-	for (int i = 0; i < points.size() - 1; i++)
+	for (unsigned int i = 0; i < points.size() - 1; i++)
 		sum += points[i];
 	center = sum / int(points.size() - 1);
 }
@@ -232,7 +247,7 @@ void DiagramShape::draw(cv::Mat &img, cv::Scalar color) {
     }
     else {
         // Draw lines between each set of points.
-        for (int i = 0; i < this->points.size()-1; i++) {
+        for (unsigned int i = 0; i < this->points.size()-1; i++) {
             cv::Point pt1 = this->points[i];
             pt1.x *= 10;
             pt1.y *= 10;

@@ -1,0 +1,13 @@
+d1 = dot(d1)
+d2 = dot(d2)
+scc1 = scc(s1, s2, s3, s4, s5, s6, s7, s8, s9)
+shape(d1, dot)
+shape(d2, dot)
+shape(scc1, scc)
+left_of(d1, d2)
+above(d1, d2)
+left_of(scc1, d1)
+above(scc1, d1)
+left_of(scc1, d2)
+above(scc1, d2)
+

@@ -1,5 +1,0 @@
-t2 = triangle(s11, s2, s9)
-scc1 = scc(s1, s10, s3, s4, s5, s6, s7, s8)
-shape(t2, triangle)
-shape(scc1, scc)
-

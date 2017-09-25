@@ -65,7 +65,7 @@ public:
 	bool shareSide(const DiagramShape &other)const;
 	bool overlapping()const;
 	void purgeExtraPoints();
-	void DiagramShape::calcCenter();
+	void calcCenter();
 
 
     bool combine(const DiagramShape &shape, DiagramShape &result_combination) const;

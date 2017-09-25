@@ -1,5 +1,0 @@
-sq1 = square(s1, s2, s3, s4, s5, s6)
-t1 = triangle(s10, s11, s7, s8, s9)
-shape(sq1, square)
-shape(t1, triangle)
-

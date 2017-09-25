@@ -95,7 +95,7 @@ void drawFilledShape(const DiagramShape& shape, cv::Mat& image, cv::Scalar color
         // Remove the last point, which is a repeat of the first point.
         contour.pop_back();
         // Scale to 1000x1000 grid from 100x100 grid.
-        for (int i = 0; i < contour.size(); ++i) {
+        for (unsigned int i = 0; i < contour.size(); ++i) {
             contour[i] *= 10;
         }
         
@@ -202,6 +202,7 @@ bool shapeLeftOf(DiagramShape& shape1, DiagramShape& shape2)
 		shape2.relations.push_back(Relation(shape1.id, LEFT_OF));
 		return false;
 	}
+	return false;
 
 }
 
@@ -220,35 +221,37 @@ bool shapeAbove(DiagramShape& shape1, DiagramShape& shape2)
 		shape2.relations.push_back(Relation(shape1.id, ABOVE));
 		return false;
 	}
+	return false;
 		
 }
 
 void updateShapeInfo(vector<vector<DiagramShape>> &results)
 {
+
 	for (vector<DiagramShape> &vec : results)
-	{
-		for (int i = 0; i < vec.size(); i++)
+		for (unsigned int i = 0; i < vec.size(); i++)
 		{
 			vec[i].purgeExtraPoints();
 			if (vec[i].convertToTriangle())
-				continue;
+				true;
 			else if (vec[i].convertToSquare())
-				continue;
+				true;
 			else if (vec[i].convertToRectangle())
-				continue;
-			else if (vec[i].convertToScc())
-				continue;
-			else
-				cout << "Could not convert to any shape" << endl;
-			for (int j = i + 1; j < vec.size(); j++)
+				true;
+			else 
+				vec[i].convertToScc();
+				
+		}
+
+	for (vector<DiagramShape> &vec : results)
+		for (unsigned int i = 0; i < vec.size(); i++)
+			for (unsigned int j = i + 1; j < vec.size(); j++)
 			{
 				
 				shapeOverlap(vec[i], vec[j]);
 				shapeLeftOf(vec[i], vec[j]);
 				shapeAbove(vec[i], vec[j]);
 			}
-		}
-	}
 }
 
 

@@ -1,5 +1,0 @@
-scc2 = scc(s1, s11, s3, s4, s5, s6, s9)
-scc3 = scc(s10, s2, s7, s8)
-shape(scc2, scc)
-shape(scc3, scc)
-
