@@ -3,7 +3,8 @@ class Shape:
     def __init__(self, input_str):
         self.id = None
         self.type = None
-        self. size = None
+        self.size = None
+        self.size_num = -1
         self.center = [-1, -1]
         self.sides = -1
 
@@ -12,6 +13,13 @@ class Shape:
         paren_str = input_str[input_str.find("(") + 1:input_str.find(")")]
         paren_list = [x.strip() for x in paren_str.split(",")]
         self.size = paren_list[0][1:-1]
+        if self.size == "small":
+            self.size_num = 0
+        if self.size == "medium":
+            self.size_num = 1
+        if self.size == "large":
+            self.size_num = 2
+
         self.center[0] = int(paren_list[1])
         self.center[1] = int(paren_list[2])
         if self.type == "scc":
